@@ -120,7 +120,9 @@ void get_reply(int fd)
 		(T4-T1) - (T3-T2),
 		((T2 - T1) + (T3 - T4)) /2
 	      );
-	diff_sec = ((t2[0] - t1[0]) + (t3[0] - t4[0])) /2;
+	/* wenn mit ganzzahl rechnen, es kann sein,
+	 * dass die differenz negativ ist */
+	diff_sec = ((int32_t)(t2[0] - t1[0]) + (int32_t)(t3[0] - t4[0])) /2;
 	curr_time = time(NULL) - diff_sec;
 	printf("Current Time at Server:   %s\n", ctime(&curr_time));
 }
