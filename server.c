@@ -68,7 +68,6 @@ int ntp_reply(
 	if ((recv_buf[0] & 0x07/*0xC7*/) != 0x3) {
 		/* LI VN Mode stimmt nicht */
 		log_ntp_event("Invalid request: found error at the first byte");
-		printf(">>>>> recv_buf[0] = 0x%X\n", recv_buf[0]);
 		return 1;
 	}
 
