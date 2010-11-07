@@ -29,7 +29,9 @@ void get_time64(uint32_t ts[])
 
 int die(const char *msg)
 {
-	fputs(msg, stderr);
+	if (msg) {
+		fputs(msg, stderr);
+	}
 	exit(-1);
 }
 
@@ -111,7 +113,7 @@ int ntp_reply(
 	u32p++;
 	*u32p = htonl(*u32p);   /* -1 Min.*/
 	u32p++;
-	
+
 	/* Originate Time = Transmit Time @ Client */
 	*u32p++ = *(uint32_t *)&recv_buf[40];
 	*u32p++ = *(uint32_t *)&recv_buf[44];
@@ -157,7 +159,6 @@ void request_process_loop(int fd)
 		get_time64(recv_time);
 		/* recv_time in local endian */
 		log_request_arrive(recv_time);
-		
 
 		pid = fork();
 		if (pid == 0) {
@@ -165,7 +166,8 @@ void request_process_loop(int fd)
 			ntp_reply(fd, &src_addr , src_addrlen, buf, recv_time);
 			exit(0);
 		} else if (pid == -1) {
-			die("fork() error\n");
+			perror("fork() error");
+			die(NULL);
 		}
 		/* return to parent */
 	}
@@ -179,7 +181,8 @@ void ntp_server()
 
 	s = socket(AF_INET, SOCK_DGRAM, 0);
 	if (s == -1) {
-		die("Can not create socket.\n");
+		perror("Can not create socket.");
+		die(NULL);
 	}
 
 	memset(&sinaddr, 0, sizeof(sinaddr));
@@ -188,8 +191,13 @@ void ntp_server()
 	sinaddr.sin_addr.s_addr = INADDR_ANY;
 
 	if (0 != bind(s, (struct sockaddr *)&sinaddr, sizeof(sinaddr))) {
-		die("Bind error\n");
+		perror("Bind error");
+		die(NULL);
 	}
+
+	log_ntp_event(	"\n========================================\n"
+			"= Server started, waiting for requests =\n"
+			"========================================\n");
 
 	request_process_loop(s);
 	close(s);
@@ -200,7 +208,6 @@ void wait_wrapper()
 {
 	int s;
 	wait(&s);
-	printf("DEBUG: reply process finished\n");
 }
 
 
