@@ -14,7 +14,7 @@
 #define UTC_NTP 2208988800U /* 1970 - 1900 */
 
 /* get Timestamp for NTP in LOCAL ENDIAN */
-void get_time64(uint32_t ts[])
+void gettime64(uint32_t ts[])
 {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -68,7 +68,7 @@ void request(int fd)
 	/* LI VN MODE = 00 100 011*/
 	buf[0] = 0x23;
 
-	get_time64(tts);
+	gettime64(tts);
 	(*(uint32_t *)&buf[40]) = htonl(tts[0]);
 	(*(uint32_t *)&buf[44])= htonl(tts[1]);
 	if (send(fd, buf, 48, 0) !=48 ) {
@@ -93,7 +93,7 @@ void get_reply(int fd)
 	if (recv(fd, buf, 48, 0) < 48) {
 		die("Receive error\n");
 	}
-	get_time64(t4);
+	gettime64(t4);
 	pt = (uint32_t *)&buf[24];
 
 	t1[0] = htonl(*pt++);
@@ -120,8 +120,8 @@ void get_reply(int fd)
 		(T4-T1) - (T3-T2),
 		((T2 - T1) + (T3 - T4)) /2
 	      );
-	/* wenn mit ganzzahl rechnen, es kann sein,
-	 * dass die differenz negativ ist */
+	/* wenn mit Ganzzahl rechnen, kann sein,
+	 * dass die Differenz negativ ist */
 	diff_sec = ((int32_t)(t2[0] - t1[0]) + (int32_t)(t3[0] - t4[0])) /2;
 	curr_time = time(NULL) - diff_sec;
 	printf("Current Time at Server:   %s\n", ctime(&curr_time));

@@ -17,7 +17,7 @@
 #define UTC_NTP 2208988800U /* 1970 - 1900 */
 
 /* get Timestamp for NTP in LOCAL ENDIAN */
-void get_time64(uint32_t ts[])
+void gettime64(uint32_t ts[])
 {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -108,7 +108,7 @@ int ntp_reply(
 	/* falscher Reference TimeStamp,
 	 * wird immer vor eine minute synchronisiert,
 	 * damit die Überprüfung in Client zu belügen */
-	get_time64(u32p);
+	gettime64(u32p);
 	*u32p = htonl(*u32p - 60);   /* -1 Min.*/
 	u32p++;
 	*u32p = htonl(*u32p);   /* -1 Min.*/
@@ -123,7 +123,7 @@ int ntp_reply(
 	*u32p++ = htonl(recv_time[1]);
 
 	/* zum Schluss: Transmit Time*/
-	get_time64(u32p);
+	gettime64(u32p);
 	*u32p = htonl(*u32p);   /* -1 Min.*/
 	u32p++;
 	*u32p = htonl(*u32p);   /* -1 Min.*/
@@ -156,7 +156,7 @@ void request_process_loop(int fd)
 				&src_addrlen)
 			< 48 );  /* invalid request */
 
-		get_time64(recv_time);
+		gettime64(recv_time);
 		/* recv_time in local endian */
 		log_request_arrive(recv_time);
 
