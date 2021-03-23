@@ -174,7 +174,7 @@ void request_process_loop(int fd)
 }
 
 
-void ntp_server()
+void ntp_server(struct sockaddr_in bind_addr)
 {
 	int s;
 	struct sockaddr_in sinaddr;
@@ -188,7 +188,7 @@ void ntp_server()
 	memset(&sinaddr, 0, sizeof(sinaddr));
 	sinaddr.sin_family = AF_INET;
 	sinaddr.sin_port = htons(123);
-	sinaddr.sin_addr.s_addr = INADDR_ANY;
+	sinaddr.sin_addr.s_addr = bind_addr.sin_addr.s_addr;
 
 	if (0 != bind(s, (struct sockaddr *)&sinaddr, sizeof(sinaddr))) {
 		perror("Bind error");
@@ -210,11 +210,22 @@ void wait_wrapper()
 	wait(&s);
 }
 
-
 int main(int argc, char *argv[], char **env)
 {
-	signal(SIGCHLD,wait_wrapper);
-	ntp_server();
+  struct sockaddr_in bind_addr;
+	memset(&bind_addr, 0, sizeof(bind_addr));
+  
+  if (argc > 2) {
+    printf("usage: %s [bind address]\n", argv[0]);
+    return 1;
+  }
+
+  if (argc > 1) {
+    inet_pton(AF_INET, argv[1], &(bind_addr.sin_addr));	
+  }
+  
+  signal(SIGCHLD,wait_wrapper);
+	ntp_server(bind_addr);
 	/* nicht erreichbar: */
 	return 0;
 }
